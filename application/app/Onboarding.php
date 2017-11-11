@@ -37,14 +37,50 @@ class Onboarding extends Model
   }
 
   /**
-   * return the stage each user in the cohort is in
+   * get stage of each user in week1 cohort
    * @return @var array
    */
-  private function extractStages($array = [])
+  public  function getWeekOneCohort() {
+    $cohort = $this
+      ->findCohortBetween($this->begining_of_week1, $this->end_of_week1, $this->content);
+    $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
+    return $this->calculatePercentage(count($cohort), $aggregate);
+  }
+
+  /**
+   * get stage of each user in week2 cohort
+   * @return @var array
+   */
+  public function getWeekTwoCohort()
   {
-    return array_map(function($item){
-      return explode(",", $item)[1];
-    }, $array);
+    $cohort = $this
+      ->findCohortBetween($this->begining_of_week2, $this->end_of_week2, $this->content);
+    $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
+    return $this->calculatePercentage(count($cohort), $aggregate);;
+  }
+
+  /**
+   * get stage of each user in week3 cohort
+   * @return @var array
+   */
+  public function getWeekThreeCohort()
+  {
+    $cohort = $this
+      ->findCohortBetween($this->begining_of_week3, $this->end_of_week3, $this->content);
+    $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
+    return $this->calculatePercentage(count($cohort), $aggregate);
+  }
+
+  /**
+   * get stage of each user in week4 cohort
+   * @return @var array
+   */
+  public function getWeekFourCohort()
+  {
+    $cohort = $this
+      ->findCohortBetween($this->begining_of_week4, $this->end_of_week4, $this->content);
+    $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
+    return $this->calculatePercentage(count($cohort), $aggregate);
   }
 
   /**
@@ -66,45 +102,45 @@ class Onboarding extends Model
   }
 
   /**
-   * get stage of each user in week1 cohort
+   * return the stage each user in the cohort is in
    * @return @var array
    */
-  public  function getWeekOneCohort() {
-    $cohort = $this
-      ->findCohortBetween($this->begining_of_week1, $this->end_of_week1, $this->content);
-    return $this->extractStages($cohort);
+  private function extractCurrentStage($array = [])
+  {
+    return array_map(function($item){
+      return explode(",", $item)[1];
+    }, $array);
   }
 
   /**
-   * get stage of each user in week2 cohort
-   * @return @var array
+   * get the sum of user on a state
+   * @param  array  $array
+   * @return array
    */
-  public function getWeekTwoCohort()
+  private function aggregateByStage($array = [])
   {
-    $cohort = $this
-      ->findCohortBetween($this->begining_of_week2, $this->end_of_week2, $this->content);
-    return $this->extractStages($cohort);
+    $aff = 0;
+    $aggregate = [];
+    foreach ($array as $item) {
+      if(array_key_exists($item, $aggregate)) {
+        $aggregate[$item] = $aggregate[$item] + 1;
+        continue;
+      }
+      $aggregate[$item] = 1;
+    }
+    return array_values($aggregate);
   }
 
   /**
-   * get stage of each user in week3 cohort
-   * @return @var array
+   * return the percentage of each element
+   * @param number $whole 
+   * @param  array  $elements
+   * @return array 
    */
-  public function getWeekThreeCohort()
+  private function calculatePercentage($whole, $elements = [])
   {
-    $cohort = $this
-      ->findCohortBetween($this->begining_of_week3, $this->end_of_week3, $this->content);
-    return $this->extractStages($cohort);
-  }
-
-  /**
-   * get stage of each user in week4 cohort
-   * @return @var array
-   */
-  public function getWeekFourCohort()
-  {
-    $cohort = $this
-      ->findCohortBetween($this->begining_of_week4, $this->end_of_week4, $this->content);
-    return $this->extractStages($cohort);
+    return array_map(function ($item) use($whole) {
+      return ceil(($item / $whole) * 100);
+    }, $elements);
   }
 }

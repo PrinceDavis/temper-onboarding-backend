@@ -8,9 +8,9 @@ $router->get('/', function () use ($router) {
 
 $router->get('/data', function () use ($router) {
 	$onboarding = new Onboarding();
-    return $onboarding->getWeekOneCohort();
-    return $onboarding->getWeekTwoCohort();
-    return $onboarding->getWeekThreeCohort();
+    // return $onboarding->getWeekOneCohort();
+    // return $onboarding->getWeekTwoCohort();
+    // return $onboarding->getWeekThreeCohort();
     return $onboarding->getWeekFourCohort();
 });
   
