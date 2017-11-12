@@ -25,7 +25,10 @@ $app = new Laravel\Lumen\Application(
 
 $app->withFacades();
 
-$app->withEloquent();
+// $app->withEloquent();
+
+$app->configure('filesystems');
+$app->configure('cors');
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +55,8 @@ $app->singleton('filesystem', function ($app) {
     return $app->loadComponent('filesystems', 'Illuminate\Filesystem\FilesystemServiceProvider', 'filesystem');
 });
 
+
+
 /*
 |--------------------------------------------------------------------------
 | Register Middleware
@@ -63,9 +68,9 @@ $app->singleton('filesystem', function ($app) {
 |
 */
 
-// $app->middleware([
-//    App\Http\Middleware\ExampleMiddleware::class
-// ]);
+$app->middleware([
+  \Barryvdh\Cors\HandleCors::class
+]);
 
 // $app->routeMiddleware([
 //     'auth' => App\Http\Middleware\Authenticate::class,
@@ -82,9 +87,11 @@ $app->singleton('filesystem', function ($app) {
 |
 */
 
-$app->register(App\Providers\AppServiceProvider::class);
+// $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
+$app->register(Barryvdh\Cors\ServiceProvider::class);
+
 
 /*
 |--------------------------------------------------------------------------

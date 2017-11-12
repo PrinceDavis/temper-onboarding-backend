@@ -2,22 +2,19 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-class Onboarding extends Model
+class Onboarding 
 {
 
-  public $timestamps  = false;
 
   /**
-   * The attributes that are mass assignable.
+   * The users data to be analyzed.
    *
    * @var array
    */
   private $content = [];
  
-
   function __construct() {
     //data cleanup
     $file = Storage::disk('local')->get('onboarding.csv');
@@ -27,13 +24,22 @@ class Onboarding extends Model
     //extract date information from data
     $first_user_data = explode(",", $this->content[0]);
     $this->begining_of_week1 = $first_user_data[4];
-    $this->end_of_week1 = date('m/d/Y', strtotime($this->begining_of_week1 . ' + 6 days'));
+    $this->end_of_week1      = date('m/d/Y', strtotime($this->begining_of_week1 . ' + 6 days'));
     $this->begining_of_week2 = date('m/d/Y', strtotime($this->end_of_week1 . ' + 1 days'));
-    $this->end_of_week2 = date('m/d/Y', strtotime($this->begining_of_week2 . ' + 6 days'));
+    $this->end_of_week2      = date('m/d/Y', strtotime($this->begining_of_week2 . ' + 6 days'));
     $this->begining_of_week3 = date('m/d/Y', strtotime($this->end_of_week2 . ' + 1 days'));
-    $this->end_of_week3 = date('m/d/Y', strtotime($this->begining_of_week3 . ' + 6 days'));
+    $this->end_of_week3      = date('m/d/Y', strtotime($this->begining_of_week3 . ' + 6 days'));
     $this->begining_of_week4 = date('m/d/Y', strtotime($this->end_of_week3 . ' + 1 days'));
-    $this->end_of_week4 = date('m/d/Y', strtotime($this->begining_of_week4 . ' + 6 days'));
+    $this->end_of_week4      = date('m/d/Y', strtotime($this->begining_of_week4 . ' + 6 days'));
+  }
+
+  /**
+   * return user data
+   * @return array
+   */
+  public function getContent()
+  {
+    return $this->content;
   }
 
   /**
@@ -42,11 +48,12 @@ class Onboarding extends Model
    */
   public  function getWeekOneCohort() {
     $cohort = $this
-      ->findCohortBetween($this->begining_of_week1, $this->end_of_week1, $this->content);
+      ->findCohortBetween($this->begining_of_week1, $this->end_of_week1);
     $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
     return $this->calculatePercentage(count($cohort), $aggregate);
   }
 
+  
   /**
    * get stage of each user in week2 cohort
    * @return @var array
@@ -54,8 +61,8 @@ class Onboarding extends Model
   public function getWeekTwoCohort()
   {
     $cohort = $this
-      ->findCohortBetween($this->begining_of_week2, $this->end_of_week2, $this->content);
-    $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
+      ->findCohortBetween($this->begining_of_week2, $this->end_of_week2);
+    return $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
     return $this->calculatePercentage(count($cohort), $aggregate);;
   }
 
@@ -66,7 +73,7 @@ class Onboarding extends Model
   public function getWeekThreeCohort()
   {
     $cohort = $this
-      ->findCohortBetween($this->begining_of_week3, $this->end_of_week3, $this->content);
+      ->findCohortBetween($this->begining_of_week3, $this->end_of_week3);
     $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
     return $this->calculatePercentage(count($cohort), $aggregate);
   }
@@ -78,7 +85,7 @@ class Onboarding extends Model
   public function getWeekFourCohort()
   {
     $cohort = $this
-      ->findCohortBetween($this->begining_of_week4, $this->end_of_week4, $this->content);
+      ->findCohortBetween($this->begining_of_week4, $this->end_of_week4);
     $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
     return $this->calculatePercentage(count($cohort), $aggregate);
   }
@@ -90,8 +97,8 @@ class Onboarding extends Model
    * @param  array  $array 
    * @return @var array
    */
-  private function findCohortBetween($begining_at, $end_at, $array = []) {
-    return array_filter($array, function($item) use ($begining_at, $end_at, $array) {
+    public function findCohortBetween($begining_at, $end_at) {
+    return array_filter($this->content, function($item) use ($begining_at, $end_at) {
       $record = explode(",", $item);
       $record_date = strtotime($record[4]);
       if($record_date>= strtotime($begining_at) && $record_date <= strtotime($end_at)){
@@ -120,15 +127,13 @@ class Onboarding extends Model
   private function aggregateByStage($array = [])
   {
     $aff = 0;
-    $aggregate = [];
+    $stages = [0 => 0, 20 => 0, 40 => 0, 50 => 0, 70 => 0, 90 => 0, 99 => 0, 100 => 0];
     foreach ($array as $item) {
-      if(array_key_exists($item, $aggregate)) {
-        $aggregate[$item] = $aggregate[$item] + 1;
-        continue;
+      if(array_key_exists($item, $stages)) {
+        $stages[$item] = $stages[$item] + 1;
       }
-      $aggregate[$item] = 1;
     }
-    return array_values($aggregate);
+    return array_values($stages);
   }
 
   /**

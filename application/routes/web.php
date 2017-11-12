@@ -3,14 +3,7 @@
 use App\Onboarding;
 
 $router->get('/', function () use ($router) {
-  return 'welcome to analytics api';
+  return 'welcome to onboarding analytics api';
 });
-
-$router->get('/data', function () use ($router) {
-	$onboarding = new Onboarding();
-    // return $onboarding->getWeekOneCohort();
-    // return $onboarding->getWeekTwoCohort();
-    // return $onboarding->getWeekThreeCohort();
-    return $onboarding->getWeekFourCohort();
-});
+$router->get('/cohorts', 'CohortController@index');
   
