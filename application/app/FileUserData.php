@@ -2,11 +2,11 @@
 
 namespace App;
 
+use App\Interfaces\OnboardingRepository;
 use Illuminate\Support\Facades\Storage;
 
-class Onboarding 
+class FileUserData implements OnboardingRepository
 {
-
 
   /**
    * The users data to be analyzed.
@@ -34,15 +34,6 @@ class Onboarding
   }
 
   /**
-   * return user data
-   * @return array
-   */
-  public function getContent()
-  {
-    return $this->content;
-  }
-
-  /**
    * get stage of each user in week1 cohort
    * @return @var array
    */
@@ -50,7 +41,7 @@ class Onboarding
     $cohort = $this
       ->findCohortBetween($this->begining_of_week1, $this->end_of_week1);
     $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
-    return $this->calculatePercentage(count($cohort), $aggregate);
+    return calculatePercentage(count($cohort), $aggregate);
   }
 
   
@@ -63,7 +54,7 @@ class Onboarding
     $cohort = $this
       ->findCohortBetween($this->begining_of_week2, $this->end_of_week2);
     return $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
-    return $this->calculatePercentage(count($cohort), $aggregate);;
+    return calculatePercentage(count($cohort), $aggregate);;
   }
 
   /**
@@ -75,7 +66,7 @@ class Onboarding
     $cohort = $this
       ->findCohortBetween($this->begining_of_week3, $this->end_of_week3);
     $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
-    return $this->calculatePercentage(count($cohort), $aggregate);
+    return calculatePercentage(count($cohort), $aggregate);
   }
 
   /**
@@ -87,7 +78,7 @@ class Onboarding
     $cohort = $this
       ->findCohortBetween($this->begining_of_week4, $this->end_of_week4);
     $aggregate = $this->aggregateByStage($this->extractCurrentStage($cohort));
-    return $this->calculatePercentage(count($cohort), $aggregate);
+    return calculatePercentage(count($cohort), $aggregate);
   }
 
   /**
@@ -97,7 +88,7 @@ class Onboarding
    * @param  array  $array 
    * @return @var array
    */
-    public function findCohortBetween($begining_at, $end_at) {
+  public function findCohortBetween($begining_at, $end_at) {
     return array_filter($this->content, function($item) use ($begining_at, $end_at) {
       $record = explode(",", $item);
       $record_date = strtotime($record[4]);
@@ -134,18 +125,5 @@ class Onboarding
       }
     }
     return array_values($stages);
-  }
-
-  /**
-   * return the percentage of each element
-   * @param number $whole 
-   * @param  array  $elements
-   * @return array 
-   */
-  private function calculatePercentage($whole, $elements = [])
-  {
-    return array_map(function ($item) use($whole) {
-      return ceil(($item / $whole) * 100);
-    }, $elements);
   }
 }
